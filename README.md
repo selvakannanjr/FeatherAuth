@@ -4,4 +4,4 @@ A lightweight authentication library written in Go for basic user and API authen
 
 Below is the architecture it follows:
 
-![Architecture]( "Demo")
+![Architecture](https://github.com/selvakannanjr/FeatherAuth/blob/master/Feather_arch.png)
