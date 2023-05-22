@@ -1,6 +1,7 @@
 package credmanage
 
 import (
+	"feather/environment"
 	redisclient "feather/redis-client"
 	"net/http"
 	"time"
@@ -8,12 +9,19 @@ import (
 	"github.com/golang-jwt/jwt/v4"
 	"github.com/labstack/echo/v4"
 	"github.com/redis/go-redis/v9"
+	"github.com/spf13/viper"
 )
 
 var Clt *redis.Client
+var signkey string
 
 func init(){
-	Clt = redisclient.CreateClient("localhost:6379","",0)
+	environment.ViperExport()
+	connstring := viper.GetString("redisServer.connectionstring")
+	redispass := viper.GetString("redisServer.password")
+	redisdb := viper.GetInt("redisServer.database")
+	Clt = redisclient.CreateClient(connstring,redispass,redisdb)
+	signkey = viper.GetString("jwt.signkey")
 }
 
 type Credential struct{
@@ -43,7 +51,7 @@ func Authenticate(c echo.Context)error{
 		return c.String(http.StatusForbidden,"Wrong Password")
 	}
 	
-	t,err := CreateSignedToken(cred.Username,false,time.Now().Add(time.Minute*3),"topsecret")
+	t,err := CreateSignedToken(cred.Username,false,time.Now().Add(time.Minute*3),signkey)
 	if err != nil {
 		return err
 	}
@@ -63,7 +71,7 @@ func SignUp(c echo.Context)error{
 	if err!=nil{
 		return err
 	}
-	t,err := CreateSignedToken(cred.Username,false,time.Now().Add(time.Minute*3),"topsecret")
+	t,err := CreateSignedToken(cred.Username,false,time.Now().Add(time.Minute*3),signkey)
 	if err != nil {
 		return err
 	}
